@@ -6,7 +6,7 @@
 <style>
 :root{--bg:#161a29;--g:rgba(255,255,255,.06);--gb:rgba(255,255,255,.11);--tx:#e8eeff;--mu:#8a97c2;--up:#2bf0a5;--dn:#ff5a6e;--ac:#4c7dff}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--tx);font:500 14px/1.35 system-ui,-apple-system,Roboto,sans-serif;overflow:hidden}
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;height:100%;background:var(--bg);color:var(--tx);font:500 14px/1.35 system-ui,-apple-system,Roboto,sans-serif;overflow:hidden}
 button,input{font:inherit;color:inherit}button{cursor:pointer}
 #bg{position:fixed;inset:0;background:radial-gradient(120% 80% at 15% 0,#1a3aa055,transparent 60%),radial-gradient(90% 70% at 100% 100%,#0f8f7a33,transparent 60%),var(--bg)}
 .m{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
@@ -264,7 +264,7 @@ document.addEventListener('input',e=>{const i=e.target;if(i.id==='pair'){S.pair=
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)$$('video').forEach(v=>v.play().catch(()=>{}))});
 /* long-press resize for banners */
 let RZ=null,LP=0,X0=0,Y0=0,noClick=0;
-document.addEventListener('contextmenu',e=>{if(e.target.closest('.slot'))e.preventDefault()});
+addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.slot,nav,#tfs,.bs,.rs'))e.preventDefault()},true);addEventListener('selectstart',e=>e.preventDefault(),true);
 document.addEventListener('touchmove',e=>{if(RZ)e.preventDefault()},{passive:false});
 document.addEventListener('pointerdown',e=>{const el=e.target.closest('.slot:not(.pv)');if(!el)return;const n=el.dataset.slot;if(!S.m[n]||n==='app')return;
  const r=el.getBoundingClientRect(),z=Math.min(28,r.width/4),l=e.clientX-r.left<z,rt=r.right-e.clientX<z,t=e.clientY-r.top<z,b=r.bottom-e.clientY<z;
