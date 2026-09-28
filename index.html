@@ -100,6 +100,9 @@ nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stro
 #dots{display:flex;gap:3px}#dots i{width:6px;height:10px;border-radius:2px;background:var(--up)}#dots i.l{background:var(--dn)}
 #tally b{font:700 12px ui-monospace,monospace;margin-right:6px}#tally span{color:var(--mu)}#tally em{display:none}
 @media(max-width:640px){nav{display:none}#app{bottom:0;padding-left:8px;padding-right:8px}header{padding:6px 2px}.brand i{width:16px;height:16px;border-radius:5px}}
+#v-trade .slot,#v-stats .slot{margin-left:auto;margin-right:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#v-trade .slot:before,#v-stats .slot:before{content:'';position:absolute;right:6px;bottom:6px;width:9px;height:9px;border-right:2px solid #ffffff70;border-bottom:2px solid #ffffff70;border-radius:0 0 4px 0;z-index:2;pointer-events:none}
+.slot.rz{outline:2px solid var(--ac);outline-offset:2px;box-shadow:0 0 0 5px #4c7dff33}
 </style></head><body>
 <div id="bg" data-slot="app"></div><div id="veil"></div>
 <div id="app">
@@ -152,18 +155,18 @@ function go(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));$$
 const ref=()=>{rTrade();if($('#v-stats').classList.contains('on'))rStats()};
 /* media slots */
 const mk=(b,u)=>{const v=b.type.startsWith('video'),e=document.createElement(v?'video':'img');e.src=u;e.className='m';if(v){e.muted=e.loop=e.autoplay=e.playsInline=true;e.setAttribute('muted','');e.play().catch(()=>{})}return e};
-function apply(n){const c=S.m[n];$$(`[data-slot=${n}] .m`).forEach(e=>{e.style.objectPosition=c.x+'% '+c.y+'%';e.style.transformOrigin=c.x+'% '+c.y+'%';e.style.transform='scale('+c.z+')'});if(n==='app')$('#veil').style.opacity=U.app?c.d:0}
+function apply(n){const c=S.m[n];$$(`.slot[data-slot=${n}]:not(.pv)`).forEach(e=>{e.style.width=(c.w||100)+'%';e.style.height=c.h?c.h+'px':''});$$(`[data-slot=${n}] .m`).forEach(e=>{e.style.objectPosition=c.x+'% '+c.y+'%';e.style.transformOrigin=c.x+'% '+c.y+'%';e.style.transform='scale('+c.z+')'});if(n==='app')$('#veil').style.opacity=U.app?c.d:0}
 async function rSlot(n){const b=await get('m_'+n);if(U[n]){URL.revokeObjectURL(U[n]);delete U[n]}
  const hs=$$(`[data-slot=${n}]`);hs.forEach(h=>{h.querySelectorAll('.m').forEach(x=>x.remove());h.classList.toggle('has',!!b)});
  if(b){U[n]=URL.createObjectURL(b);hs.forEach(h=>h.prepend(mk(b,U[n])))}apply(n)}
 function pick(n){const i=document.createElement('input');i.type='file';i.accept='image/*,video/*';i.onchange=async()=>{const f=i.files[0];if(!f)return;await set('m_'+n,f);S.m[n]=Object.assign(S.m[n],{z:1,x:50,y:50});sv();await rSlot(n);syncSet();toast('Added. Fine-tune the position in Settings.')};i.click()}
 const NM={panel:'Trade panel banner',stats:'Analytics banner',app:'App background'};
-function buildSet(){$('#sl').innerHTML=Object.keys(NM).map(n=>`<div class="card"><h3>${NM[n]}</h3><div class="slot pv" data-slot="${n}"></div>
+function buildSet(){$('#sl').innerHTML='<p class="hint" style="margin:0 2px 10px">Resize a banner: long-press its edge on the Trade or Analytics screen, then drag. Any side works, the size is saved, and everything below moves with it.</p>'+Object.keys(NM).map(n=>`<div class="card"><h3>${NM[n]}</h3><div class="slot pv" data-slot="${n}"></div>
 <label>Zoom<input type="range" data-s="${n}" data-k="z" min="1" max="4" step=".01"></label>
 <label>Left / right<input type="range" data-s="${n}" data-k="x" min="0" max="100"></label>
 <label>Up / down<input type="range" data-s="${n}" data-k="y" min="0" max="100"></label>
 ${n==='app'?`<label>Darken<input type="range" data-s="app" data-k="d" min="0" max=".9" step=".01"></label>`:''}
-<div class="rw"><button class="btn" data-pick="${n}">Choose photo or video</button><button class="btn ghost" data-rm="${n}">Remove</button></div></div>`).join('')}
+<div class="rw"><button class="btn" data-pick="${n}">Choose photo or video</button><button class="btn ghost" data-rm="${n}">Remove</button>${n!=='app'?`<button class="btn ghost" data-rs="${n}">Reset size</button>`:''}</div></div>`).join('')}
 const syncSet=()=>$$('[data-s]').forEach(i=>i.value=S.m[i.dataset.s][i.dataset.k]);
 /* trades */
 function add(dir){if(A())return;const [l,s]=TF.find(x=>x[0]===S.tf);T.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),ts:Date.now(),dir,tf:l,sec:s,pair:S.pair,res:null});st();ref();lastS=0;vib(30);beep(dir==='b'?520:300,.14,.22,'sawtooth');flash(dir==='b'?'#2bf0a5aa':'#ff5a6eaa')}
@@ -233,7 +236,7 @@ function saveIc(){cv.toBlob(async b=>{await set('iconPng',b);await set('iconV',D
  navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update());
  toast('Icon saved. To see it on the home screen: remove the app, then add it again from Chrome.')},'image/png')}
 /* clicks */
-let sT;document.addEventListener('click',async e=>{const t=e.target.closest('button,.slot');if(!t)return;
+let sT;document.addEventListener('click',async e=>{const t=e.target.closest('button,.slot');if(!t)return;if(t.classList.contains('slot')&&Date.now()-noClick<500)return;
  if(t.matches('nav button'))return go(t.dataset.v);
  if(t.classList.contains('slot'))return pick(t.dataset.slot);
  const d=t.dataset;
@@ -245,6 +248,7 @@ let sT;document.addEventListener('click',async e=>{const t=e.target.closest('but
  if(t.id==='tsnd'||t.id==='tvib'){const k=t.id==='tsnd'?'snd':'vib';S[k]=!S[k];sv();sfx();if(S[k]&&k==='vib')vib(60);return}
  if(d.cyc){const x=T.find(q=>q.id===d.cyc);if(x){x.res=x.res==='w'?'l':x.res==='l'?null:'w';st();ref()}return}
  if(d.del){T=T.filter(q=>q.id!==d.del);st();return ref()}
+ if(d.rs){delete S.m[d.rs].w;delete S.m[d.rs].h;apply(d.rs);sv();return toast('Size reset.')}
  if(d.pick)return pick(d.pick);
  if(d.rm){await set('m_'+d.rm,null);return rSlot(d.rm)}
  if(t.id==='ipk'){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=async()=>{if(i.files[0]){await ldImg(i.files[0]);Object.assign(IC,{z:1,x:0,y:0});dIc()}};return i.click()}
@@ -258,6 +262,19 @@ let sT;document.addEventListener('click',async e=>{const t=e.target.closest('but
 document.addEventListener('input',e=>{const i=e.target;if(i.id==='pair'){S.pair=i.value.trim();clearTimeout(sT);sT=setTimeout(sv,400)}
  if(i.dataset.s){S.m[i.dataset.s][i.dataset.k]=+i.value;apply(i.dataset.s);clearTimeout(sT);sT=setTimeout(sv,400)}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)$$('video').forEach(v=>v.play().catch(()=>{}))});
+/* long-press resize for banners */
+let RZ=null,LP=0,X0=0,Y0=0,noClick=0;
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.slot'))e.preventDefault()});
+document.addEventListener('touchmove',e=>{if(RZ)e.preventDefault()},{passive:false});
+document.addEventListener('pointerdown',e=>{const el=e.target.closest('.slot:not(.pv)');if(!el)return;const n=el.dataset.slot;if(!S.m[n]||n==='app')return;
+ const r=el.getBoundingClientRect(),z=Math.min(28,r.width/4),l=e.clientX-r.left<z,rt=r.right-e.clientX<z,t=e.clientY-r.top<z,b=r.bottom-e.clientY<z;
+ if(!(l||rt||t||b))return;X0=e.clientX;Y0=e.clientY;clearTimeout(LP);
+ LP=setTimeout(()=>{LP=0;RZ={n,el,x0:X0,y0:Y0,w0:r.width,h0:r.height,sx:rt?1:l?-1:0,sy:b?1:t?-1:0,W:el.parentElement.clientWidth};el.classList.add('rz');vib(25);try{el.setPointerCapture(e.pointerId)}catch(x){}},350)});
+document.addEventListener('pointermove',e=>{
+ if(RZ){const c=S.m[RZ.n];if(RZ.sx)c.w=Math.round(Math.min(100,Math.max(25,(RZ.w0+2*RZ.sx*(e.clientX-RZ.x0))/RZ.W*100)));if(RZ.sy)c.h=Math.round(Math.min(360,Math.max(24,RZ.h0+RZ.sy*(e.clientY-RZ.y0))));apply(RZ.n);return}
+ if(LP&&Math.hypot(e.clientX-X0,e.clientY-Y0)>10){clearTimeout(LP);LP=0}});
+const rzEnd=()=>{clearTimeout(LP);LP=0;if(RZ){RZ.el.classList.remove('rz');RZ=null;noClick=Date.now();sv()}};
+document.addEventListener('pointerup',rzEnd);document.addEventListener('pointercancel',rzEnd);
 (async()=>{
  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
  T=(await get('trades'))||[];const s=await get('S');if(s){S=Object.assign(D(),s);const d=D().m;for(const k in d)S.m[k]=Object.assign(d[k],(s.m||{})[k])}
