@@ -1,4 +1,4 @@
-const C='otc-v1',A=['./','index.html','icon-192.png','icon-512.png'];
+const C='otc-v2',A=['./','index.html','icon-192.png','icon-512.png'];
 const db=()=>new Promise((r,j)=>{const q=indexedDB.open('otc',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)});
 const get=async k=>{try{const d=await db();return await new Promise(r=>{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)})}catch(e){return null}};
 async function man(){
@@ -15,7 +15,5 @@ self.addEventListener('fetch',e=>{
  if(u.origin!==location.origin||e.request.method!=='GET')return;
  if(u.pathname.endsWith('/manifest.webmanifest'))return e.respondWith(man());
  if(u.pathname.endsWith('/icon-custom.png'))return e.respondWith(ico());
- e.respondWith(caches.match(e.request).then(h=>{
-  const f=fetch(e.request).then(r=>{if(r.ok){const c=r.clone();caches.open(C).then(x=>x.put(e.request,c))}return r}).catch(()=>h);
-  return h||f}));
+ e.respondWith(fetch(e.request).then(r=>{if(r.ok){const c=r.clone();caches.open(C).then(x=>x.put(e.request,c))}return r}).catch(()=>caches.match(e.request)));
 });
